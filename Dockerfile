@@ -27,8 +27,7 @@ RUN apt-get install -y \
     cppcheck
 
 #downlaod crosstool neede for embedded devices
-RUN curl -SL http://opensource.lnf.infn.it/binary/chaos/tools/chaos-cross-tools-x86_64.tgz \
-    | tar xvz -C /
+#RUN curl -SL http://opensource.lnf.infn.it/binary/chaos/tools/chaos-cross-tools-x86_64.tgz | tar xvz -C /
 
 RUN mkdir -p /tmp/source
 
