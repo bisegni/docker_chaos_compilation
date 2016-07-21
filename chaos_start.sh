@@ -49,7 +49,7 @@ git clone https://opensource-stash.infn.it/scm/chaos/chaosframework.git  /tmp/so
 echo 'Set current directory /tmp/source/chaosframework'
 cd /tmp/source/chaosframework
 
-echo Compiling !CHAOS $BRANCH_NAME branch
+echo "Compiling !CHAOS $BRANCH_NAME branch"
 if git checkout origin/$BRANCH_NAME; then
     echo Successfully cheked out branch origin/$BRANCH_NAME
 else
