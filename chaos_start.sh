@@ -2,6 +2,7 @@
 set -e
 
 BRANCH_NAME=""
+CHAOS_TARGET=""
 DO_STATIC_TEST=false
 PRINT_HELP=false
 
@@ -10,9 +11,10 @@ if [ -z "$NPROC" ];then
 fi
 echo "Using ${NPROC} number of porcessor"
 #parse parameter
-while getopts "b:sh" opt; do
+while getopts "b:sht:" opt; do
    case $opt in
       b) BRANCH_NAME="$OPTARG" ;;
+      t) CHAOS_TARGET="$OPTARG" ;;
       s) DO_STATIC_TEST=true ;;
       h) PRINT_HELP=true ;;
    esac
@@ -30,6 +32,18 @@ if [ -z "$BRANCH_NAME" ]; then
   exit 1 # error
 fi
 
+if [ -n "$CHAOS_TARGET" ]; then
+  echo "Compiling for target ${CHAOS_TARGET}"
+  if [ "$CHAOS_TARGET" == "arm-linux-2.6" ]; then
+    export PATH=$PATH:/usr/local/chaos/gcc-arm-infn-linux26/bin
+    echo "Using new path ${PATH}"
+  elif [ "$CHAOS_TARGET" == "i686-linux26" ]; then
+    export PATH=$PATH:/usr/local/chaos/i686-nptl-linux-gnu/bin
+    echo "Using new path ${PATH}"
+  fi
+  export CHAOS_TARGET=$CHAOS_TARGET
+fi
+
 echo 'Cloning https://opensource-stash.infn.it/scm/chaos/chaosframework.git repository'
 git clone https://opensource-stash.infn.it/scm/chaos/chaosframework.git  /tmp/source/chaosframework
 echo 'Set current directory /tmp/source/chaosframework'
@@ -37,7 +51,7 @@ cd /tmp/source/chaosframework
 
 echo Compiling !CHAOS $BRANCH_NAME branch
 if git checkout origin/$BRANCH_NAME; then
-        echo Successfully cheked out branch origin/$BRANCH_NAME
+    echo Successfully cheked out branch origin/$BRANCH_NAME
 else
     echo >&2 "Branch not found on origin repository"
     exit 1
