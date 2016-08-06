@@ -57,10 +57,17 @@ else
     exit 1
 fi
 
-if ./bootstrap.sh; then
-  echo 'Successfully compiled !CHAOS Framework'
+if cmake .; then
+  echo 'Successfully compiled configured !CHAOS Framework'
 else
-  echo >&2 'Error compiling !CHAOS framwork'
+  echo >&2 'Error configuring !CHAOS framwork'
+  exit 1
+fi
+
+if make -j $NPROC; then
+  echo 'Successfully compiled configured !CHAOS Framework'
+else
+  echo >&2 'Error configuring !CHAOS framwork'
   exit 1
 fi
 
