@@ -74,13 +74,18 @@ else
   exit 1
 fi
 
-if ! ctest; then
-  echo >&2 'Error performing tests on !CHAOS framwork'
+if ! ctest -D ContinuousBuild; then
+  echo >&2 'Error performing continus build on !CHAOS framwork'
   exit 1;
 fi
 
-if ! ctest -D Continuous; then
-  echo >&2 'Error pushing test result for !CHAOS framwork'
+if ! ctest -D ContinuousTest; then
+  echo >&2 'Error performing continuous test on !CHAOS framwork'
+  exit 1;
+fi
+
+if ! ctest -D ContinuousSubmit; then
+  echo >&2 'Error pushing continuous result for !CHAOS framwork'
   exit 1;
 fi
 
