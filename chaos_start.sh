@@ -57,18 +57,28 @@ else
     exit 1
 fi
 
-if cmake .; then
+if cmake -DCHAOS_ARCHITECTURE_TEST=1 .; then
   echo 'Successfully compiled configured !CHAOS Framework'
 else
   echo >&2 'Error configuring !CHAOS framwork'
   exit 1
 fi
 
-if make -j $NPROC; then
+if make -j $NPROC install; then
   echo 'Successfully compiled configured !CHAOS Framework'
 else
   echo >&2 'Error configuring !CHAOS framwork'
   exit 1
+fi
+
+if ! ctest; then
+  echo >&2 'Error performing tests on !CHAOS framwork'
+  exit 1;
+fi
+
+if ! ctest -D Continuous; then
+  echo >&2 'Error pushing test result for !CHAOS framwork'
+  exit 1;
 fi
 
 if $DO_STATIC_TEST; then
