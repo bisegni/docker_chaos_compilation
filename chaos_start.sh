@@ -44,8 +44,11 @@ if [ -n "$CHAOS_TARGET" ]; then
   export CHAOS_TARGET=$CHAOS_TARGET
 fi
 
-echo 'Cloning https://opensource-stash.infn.it/scm/chaos/chaosframework.git repository'
-git clone https://opensource-stash.infn.it/scm/chaos/chaosframework.git  /tmp/source/chaosframework
+if [ ! -d /tmp/source/chaosframework ]; then
+  echo 'Cloning https://opensource-stash.infn.it/scm/chaos/chaosframework.git repository'
+  git clone https://opensource-stash.infn.it/scm/chaos/chaosframework.git  /tmp/source/chaosframework
+fi
+
 echo 'Set current directory /tmp/source/chaosframework'
 cd /tmp/source/chaosframework
 
