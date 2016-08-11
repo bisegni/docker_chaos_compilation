@@ -73,7 +73,7 @@ fi
 
 if [ -n "$CTEST_TYPE" ]; then
   echo "Execute CTEST for type $CTEST_TYPE"
-  if ! cmake -DCHAOS_ARCHITECTURE_TEST=1 .; then
+  if ! cmake -DCHAOS_ARCHITECTURE_TEST=ON .; then
     echo >&2 'Error configuring !CHAOS framwork'
     exit 1
   fi
@@ -82,7 +82,7 @@ if [ -n "$CTEST_TYPE" ]; then
   doCTEST "$CTEST_TYPE""Configure"
   doCTEST "$CTEST_TYPE""Build"
   doCTEST "$CTEST_TYPE""Test"
-  doCTEST "$CTEST_TYPESSubmit"
+  doCTEST "$CTEST_TYPE""Submit"
 else
   echo "Execute Normal compilation"
 
