@@ -5,17 +5,28 @@ BRANCH_NAME=""
 CHAOS_TARGET=""
 DO_STATIC_TEST=false
 PRINT_HELP=false
+CTEST_TYPE=""
 
 if [ -z "$NPROC" ];then
    NPROC=$(getconf _NPROCESSORS_ONLN)
 fi
 echo "Using ${NPROC} number of porcessor"
+
+function doCTEST(){
+  echo "Performing $1"
+  if ! make -j $NPROC $1; then
+    echo >&2 "Error performing $1"
+    exit 1;
+  fi
+}
+
 #parse parameter
-while getopts "b:sht:" opt; do
+while getopts "b:sht:c:" opt; do
    case $opt in
       b) BRANCH_NAME="$OPTARG" ;;
       t) CHAOS_TARGET="$OPTARG" ;;
       s) DO_STATIC_TEST=true ;;
+      c) CTEST_TYPE="$OPTARG" ;;
       h) PRINT_HELP=true ;;
    esac
 done
@@ -60,33 +71,34 @@ else
     exit 1
 fi
 
-if cmake -DCHAOS_ARCHITECTURE_TEST=1 .; then
-  echo 'Successfully compiled configured !CHAOS Framework'
+if [ -n "$CTEST_TYPE" ]; then
+  echo "Execute CTEST for type $CTEST_TYPE"
+  if ! cmake -DCHAOS_ARCHITECTURE_TEST=1 .; then
+    echo >&2 'Error configuring !CHAOS framwork'
+    exit 1
+  fi
+
+  doCTEST "$CTEST_TYPE""Start"
+  doCTEST "$CTEST_TYPE""Configure"
+  doCTEST "$CTEST_TYPE""Build"
+  doCTEST "$CTEST_TYPE""Test"
+  doCTEST "$CTEST_TYPESSubmit"
 else
-  echo >&2 'Error configuring !CHAOS framwork'
-  exit 1
-fi
+  echo "Execute Normal compilation"
 
-if make -j $NPROC install; then
-  echo 'Successfully compiled configured !CHAOS Framework'
-else
-  echo >&2 'Error configuring !CHAOS framwork'
-  exit 1
-fi
+  if cmake .; then
+    echo 'Successfully configured !CHAOS Framework'
+  else
+    echo >&2 'Error configuring !CHAOS framwork'
+    exit 1
+  fi
 
-if ! ctest -D ContinuousBuild; then
-  echo >&2 'Error performing continus build on !CHAOS framwork'
-  exit 1;
-fi
-
-if ! ctest -D ContinuousTest; then
-  echo >&2 'Error performing continuous test on !CHAOS framwork'
-  exit 1;
-fi
-
-if ! ctest -D ContinuousSubmit; then
-  echo >&2 'Error pushing continuous result for !CHAOS framwork'
-  exit 1;
+  if make -j $NPROC install; then
+    echo 'Successfully compiled configured !CHAOS Framework'
+  else
+    echo >&2 'Error configuring !CHAOS framwork'
+    exit 1
+  fi
 fi
 
 if $DO_STATIC_TEST; then
