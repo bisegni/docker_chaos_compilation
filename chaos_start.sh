@@ -13,7 +13,7 @@ fi
 echo "Using ${NPROC} number of porcessor"
 
 function doCTEST(){
-  echo "Performing $1"
+  echo "Performing $1 with proc number $NPROC"
   if ! make -j $NPROC $1; then
     echo >&2 "Error performing $1"
     exit 1;
