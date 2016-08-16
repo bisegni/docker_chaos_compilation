@@ -5,17 +5,28 @@ BRANCH_NAME=""
 CHAOS_TARGET=""
 DO_STATIC_TEST=false
 PRINT_HELP=false
+CTEST_TYPE=""
 
 if [ -z "$NPROC" ];then
    NPROC=$(getconf _NPROCESSORS_ONLN)
 fi
 echo "Using ${NPROC} number of porcessor"
+
+function doCTEST(){
+  echo "Performing $1 with proc number $NPROC"
+  if ! make -j $NPROC $1; then
+    echo >&2 "Error performing $1"
+    exit 1;
+  fi
+}
+
 #parse parameter
-while getopts "b:sht:" opt; do
+while getopts "b:sht:c:" opt; do
    case $opt in
       b) BRANCH_NAME="$OPTARG" ;;
       t) CHAOS_TARGET="$OPTARG" ;;
       s) DO_STATIC_TEST=true ;;
+      c) CTEST_TYPE="$OPTARG" ;;
       h) PRINT_HELP=true ;;
    esac
 done
@@ -47,6 +58,8 @@ fi
 if [ ! -d /tmp/source/chaosframework ]; then
   echo 'Cloning https://opensource-stash.infn.it/scm/chaos/chaosframework.git repository'
   git clone https://opensource-stash.infn.it/scm/chaos/chaosframework.git  /tmp/source/chaosframework
+else
+  echo 'Source code already cloned'
 fi
 
 echo 'Set current directory /tmp/source/chaosframework'
@@ -63,18 +76,33 @@ if ! git pull origin $BRANCH_NAME; then
   exit 1
 fi
 
-if cmake .; then
-  echo 'Successfully compiled configured !CHAOS Framework'
+if [ -n "$CTEST_TYPE" ]; then
+  echo "Execute CTEST for type $CTEST_TYPE"
+  if ! cmake -DCHAOS_ARCHITECTURE_TEST=ON .; then
+    echo >&2 'Error configuring !CHAOS framwork'
+    exit 1
+  fi
+  doCTEST "$CTEST_TYPE""Start"
+  doCTEST "$CTEST_TYPE""Configure"
+  doCTEST "$CTEST_TYPE""Build"
+  doCTEST "$CTEST_TYPE""Test"
+  doCTEST "$CTEST_TYPE""Submit"
 else
-  echo >&2 'Error configuring !CHAOS framwork'
-  exit 1
-fi
+  echo "Execute Normal compilation"
 
-if make -j $NPROC; then
-  echo 'Successfully compiled configured !CHAOS Framework'
-else
-  echo >&2 'Error configuring !CHAOS framwork'
-  exit 1
+  if cmake .; then
+    echo 'Successfully configured !CHAOS Framework'
+  else
+    echo >&2 'Error configuring !CHAOS framwork'
+    exit 1
+  fi
+
+  if make -j $NPROC install; then
+    echo 'Successfully compiled configured !CHAOS Framework'
+  else
+    echo >&2 'Error configuring !CHAOS framwork'
+    exit 1
+  fi
 fi
 
 if $DO_STATIC_TEST; then
