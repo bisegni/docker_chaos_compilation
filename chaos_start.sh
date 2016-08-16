@@ -44,17 +44,23 @@ if [ -n "$CHAOS_TARGET" ]; then
   export CHAOS_TARGET=$CHAOS_TARGET
 fi
 
-echo 'Cloning https://opensource-stash.infn.it/scm/chaos/chaosframework.git repository'
-git clone https://opensource-stash.infn.it/scm/chaos/chaosframework.git  /tmp/source/chaosframework
+if [ ! -d /tmp/source/chaosframework ]; then
+  echo 'Cloning https://opensource-stash.infn.it/scm/chaos/chaosframework.git repository'
+  git clone https://opensource-stash.infn.it/scm/chaos/chaosframework.git  /tmp/source/chaosframework
+fi
+
 echo 'Set current directory /tmp/source/chaosframework'
 cd /tmp/source/chaosframework
 
 echo "Compiling !CHAOS $BRANCH_NAME branch"
-if git checkout origin/$BRANCH_NAME; then
-    echo Successfully cheked out branch origin/$BRANCH_NAME
-else
+if ! git checkout origin/$BRANCH_NAME; then
     echo >&2 "Branch not found on origin repository"
     exit 1
+fi
+
+if ! git pull origin $BRANCH_NAME; then
+  echo >&2 "Error updating the branch"
+  exit 1
 fi
 
 if cmake .; then
