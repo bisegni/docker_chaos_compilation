@@ -6,7 +6,7 @@ CHAOS_TARGET=""
 DO_STATIC_TEST=false
 PRINT_HELP=false
 CTEST_TYPE=""
-
+CTEST_UPDATE_SOURCE=false
 if [ -z "$NPROC" ];then
    NPROC=$(getconf _NPROCESSORS_ONLN)
 fi
@@ -21,12 +21,13 @@ function doCTEST(){
 }
 
 #parse parameter
-while getopts "b:sht:c:" opt; do
+while getopts "b:sht:c:u" opt; do
    case $opt in
       b) BRANCH_NAME="$OPTARG" ;;
       t) CHAOS_TARGET="$OPTARG" ;;
       s) DO_STATIC_TEST=true ;;
       c) CTEST_TYPE="$OPTARG" ;;
+      u) CTEST_UPDATE_SOURCE=true ;;
       h) PRINT_HELP=true ;;
    esac
 done
@@ -34,6 +35,8 @@ done
 if $PRINT_HELP; then
   echo "Usage for ${0}"
   echo " -b specify the branch name"
+  echo " -c execute compilation and testing using ctest specifing the type [Continuous, Experimental, Nightly]"
+  echo " -u update the source using ctest update command to verify is the results need to be updated to dashboard"
   echo " -s execute the static test"
   exit 0;
 fi
@@ -82,7 +85,12 @@ if [ -n "$CTEST_TYPE" ]; then
     echo >&2 'Error configuring !CHAOS framwork'
     exit 1
   fi
+
+  #execute ctest steps
   doCTEST "$CTEST_TYPE""Start"
+  if [ $CTEST_UPDATE_SOURCE == true ]; then
+    doCTEST "$CTEST_TYPE""Update"
+  fi
   doCTEST "$CTEST_TYPE""Configure"
   doCTEST "$CTEST_TYPE""Build"
   doCTEST "$CTEST_TYPE""Test"
