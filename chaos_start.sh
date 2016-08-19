@@ -68,7 +68,12 @@ fi
 echo 'Set current directory /tmp/source/chaosframework'
 cd /tmp/source/chaosframework
 
-echo "Compiling !CHAOS $BRANCH_NAME branch"
+if ! git fetch; then
+    echo >&2 "Error fetching new data"
+    exit 1
+fi
+
+echo "Checking !CHAOS $BRANCH_NAME branch"
 if ! git checkout origin/$BRANCH_NAME; then
     echo >&2 "Branch not found on origin repository"
     exit 1
