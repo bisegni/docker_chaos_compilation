@@ -6,7 +6,10 @@ CHAOS_TARGET=""
 DO_STATIC_TEST=false
 PRINT_HELP=false
 CTEST_TYPE=""
+VALIDATION_TEST=false
 CTEST_UPDATE_SOURCE=false
+CMAKE_OPTION=""
+
 if [ -z "$NPROC" ];then
    NPROC=$(getconf _NPROCESSORS_ONLN)
 fi
@@ -20,13 +23,14 @@ function doCTEST(){
 }
 
 #parse parameter
-while getopts "b:sht:c:u" opt; do
+while getopts "b:sht:c:uv" opt; do
    case $opt in
       b) BRANCH_NAME="$OPTARG" ;;
       t) CHAOS_TARGET="$OPTARG" ;;
       s) DO_STATIC_TEST=true ;;
       c) CTEST_TYPE="$OPTARG" ;;
       u) CTEST_UPDATE_SOURCE=true ;;
+      v) VALIDATION_TEST=true ;;
       h) PRINT_HELP=true ;;
    esac
 done
@@ -83,9 +87,13 @@ if ! git pull origin $BRANCH_NAME; then
   exit 1
 fi
 
+if $VALIDATION_TEST; then
+  CMAKE_OPTION="-DCHAOS_ARCHITECTURE_TEST=ON"
+fi
+
 if [ -n "$CTEST_TYPE" ]; then
   echo "Execute CTEST for type $CTEST_TYPE"
-  if ! cmake -DCHAOS_ARCHITECTURE_TEST=ON .; then
+  if ! cmake $CMAKE_OPTION .; then
     echo >&2 'Error configuring !CHAOS framwork'
     exit 1
   fi
@@ -102,7 +110,7 @@ if [ -n "$CTEST_TYPE" ]; then
 else
   echo "Execute Normal compilation"
 
-  if cmake .; then
+  if cmake $CMAKE_OPTION .; then
     echo 'Successfully configured !CHAOS Framework'
   else
     echo >&2 'Error configuring !CHAOS framwork'
